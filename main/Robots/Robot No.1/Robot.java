@@ -1,8 +1,14 @@
 package org.usfirst.frc.team6962.robot;
 
+import com.ctre.CANTalon;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,24 +23,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 	long start;
 	RobotDrive myDrive;
-	RobotDrive armDrive;
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
 	int i = 0;
 
+	WPI_TalonSRX leftTalon = new WPI_TalonSRX(0);
+	WPI_TalonSRX rightTalon = new WPI_TalonSRX(1);
 	double joystickLValue;
 	double joystickRValue;
-	double joystickArmValue;
-	double joystickWheelSpeedValue;
-	boolean buttonGripperIntake;
-	boolean buttonGripperRelease;
-	
+	double joystickArmValue1, joystickArmValue2;
+	double joystickIntakeVale;
+	double joystickShoot;
+	int armCount;
 
 	Joystick joystick0 = new Joystick(0);
 	Joystick joystick1 = new Joystick(1);
+	Spark armSpark = new Spark(2);
+	Encoder armEncoder = new Encoder(0, 1, true, Encoder.EncodingType.k2X);
+	PIDController armPID = new PIDController(0.1, 0.001, 0, armEncoder, armSpark);
 	
 	String autoSelected;
-	SendableChooser<String> chooser = new SendableChooser<>();
+	SendableChooser<String> chooser = new SendableChooser<>(); 
 
 	/**
 	 * This function is run when the robot is first started up and should be used
@@ -42,11 +51,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		leftTalon.setInverted(true);
+		armEncoder.reset();
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
 		myDrive = new RobotDrive(0, 1);
-		armDrive = new RobotDrive(2);
+		armPID.disable();
 	}
  
 	/**
@@ -86,62 +97,37 @@ public class Robot extends IterativeRobot {
 			myDrive.arcadeDrive(0,0);
 		}	
 	}
+	
+	@Override
+	public void teleopInit() {
+	//	armPID.enable();
+	}
 
 	/**
 	 * This function is called periodically during operator control
 	 */
 	@Override
 	public void teleopPeriodic() {
-		/*
-		joystickRValue = joystickL.getRawAxis(3) - joystickL.getRawAxis(2);
-		joystickLValue = joystickL.getRawAxis(3) - joystickL.getRawAxis(2);
-		if(joystickL.getRawAxis(0) > 0)
-		{
-			if(joystickL.getRawAxis(3) >= joystickL.getRawAxis(2))
-			{
-				joystickLValue += joystickL.getRawAxis(0);
-				joystickRValue -= joystickL.getRawAxis(0);
-			}
-			else if(joystickL.getRawAxis(3) < joystickL.getRawAxis(2))
-			{
-				joystickLValue -= joystickL.getRawAxis(0);
-				joystickRValue += joystickL.getRawAxis(0);
-			}
-		}
-		else if(joystickL.getRawAxis(0) < 0)
-		{
-			if(joystickL.getRawAxis(3) >= joystickL.getRawAxis(2))
-			{
-				joystickRValue -= joystickL.getRawAxis(0);
-				joystickLValue += joystickL.getRawAxis(0);
-			}
-			else if(joystickL.getRawAxis(3) < joystickL.getRawAxis(2))
-			{
-				joystickRValue += joystickL.getRawAxis(0);
-				joystickLValue -= joystickL.getRawAxis(0);
-			}
-		}*/
-		joystickLValue = -joystick0.getRawAxis(1);
-		joystickRValue = -joystick0.getRawAxis(5);
-		joystickArmValue = -joystick1.getRawAxis(1);
-		joystickWheelSpeedValue = -joystick1.getRawAxis(3)+1;
-		buttonGripperIntake = joystick1.getRawButton(1);
-		buttonGripperRelease = joystick1.getRawButton(2);
-		
-		if(((joystickLValue > 0 && joystickRValue > 0) || (joystickLValue < 0 && joystickRValue < 0)) && (joystickLValue - joystickRValue <= 0.3 && joystickLValue - joystickRValue >= -0.3))
-		{
+		joystickLValue = -joystick1.getRawAxis(1);
+		joystickRValue = -joystick1.getRawAxis(2);
+		joystickArmValue1 = -joystick0.getRawAxis(3);
+		joystickArmValue2 = -joystick0.getRawAxis(2);
+		double inTalon = joystick0.getRawAxis(1);
+		double outTalon = joystick0.getRawAxis(5);
+		armCount = armEncoder.get();
 			
-				joystickRValue = joystickLValue*(1+0.04/0.5);
-				joystickLValue = joystickRValue;
+		armSpark.set((joystickArmValue1 - joystickArmValue2)/2);
+		
+		SmartDashboard.putNumber("Encoder", armCount);
+		if (Math.abs(inTalon + outTalon) < 0.1) {
+		    leftTalon.set(0.15);
+		    rightTalon.set(0.15);
+		} else {
+		    leftTalon.set(((inTalon * 0.9) + outTalon));
+		    rightTalon.set(((inTalon * 0.9) + outTalon));
 		}
-		myDrive.tankDrive(joystickLValue, joystickRValue);
-		myDrive.arcadeDrive(joystickArmValue,0);
-		myDrive.tankDrive((joystickArmUpValue/100)*30,(joystickArmUpValue/100)*30);
-		if(buttonGripperIntake){
-			myDrive.tankDrive(joystickWheelSpeedValue,joystickWheelSpeedValue);
-		} else if(buttonGripperRelease){
-			myDrive.tankDrive(-joystickWheelSpeedValue,-joystickWheelSpeedValue)
-		}
+		//robot drives w/ out input
+		myDrive.arcadeDrive(joystickLValue, joystickRValue);
 	}
 
 	/**
