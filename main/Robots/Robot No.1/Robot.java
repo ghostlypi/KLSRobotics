@@ -4,6 +4,7 @@ import com.ctre.CANTalon;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -35,6 +36,7 @@ public class Robot extends IterativeRobot {
 	double joystickArmValue1, joystickArmValue2;
 	double joystickIntakeVale;
 	double joystickShoot;
+	double counterGoal;
 
 	Joystick joystick0 = new Joystick(0);
 	Joystick joystick1 = new Joystick(1);
@@ -86,14 +88,25 @@ public class Robot extends IterativeRobot {
 	@Override
 	
 	public void autonomousPeriodic() {
+		/*if(DriverStation.getInstance().getGameSpecificMessage() == null) {
+
+			start = System.currentTimeMillis();
+		} else if (DriverStation.getInstance().getGameSpecificMessage().toUpperCase().startsWith("R")) {
+			
+			*/
 		long current = System.currentTimeMillis();
 		if(current - start <= 2000) {
-			myDrive.arcadeDrive(0.75,0.1);
+			myDrive.arcadeDrive(0.75,0);
 		}
 		else
 		{
 			myDrive.arcadeDrive(0,0);
-		}	
+		}
+		/*} else {
+			myDrive.arcadeDrive(0,0);
+		}*/
+		
+			
 	}
 	
 	@Override
@@ -111,8 +124,22 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		joystickLValue = -joystick1.getRawAxis(1);
-		joystickRValue = -joystick1.getRawAxis(2);
+		//joystickLValue = -joystick1.getRawAxis(1) * 0.85;
+		//joystickRValue = -joystick1.getRawAxis(2) * 0.85;
+		/*if(counterGoal < armEncoder.get())
+		{
+			joystickArmValue1 = -();
+		}*/
+		if(joystick1.getRawButton(1))
+		{
+			joystickLValue = -joystick1.getRawAxis(1) * 0.65;
+			joystickRValue = -joystick1.getRawAxis(2) * 0.65;
+		}
+		else
+		{
+			joystickLValue = -joystick1.getRawAxis(1) * 0.85;
+			joystickRValue = -joystick1.getRawAxis(2) * 0.85;
+		}
 		joystickArmValue1 = -joystick0.getRawAxis(5);
 		joystickArmValue2 = joystick0.getRawAxis(1);
 		double inTalon = joystick0.getRawAxis(3);
@@ -128,8 +155,8 @@ public class Robot extends IterativeRobot {
 		    leftTalon.set(0.15);
 		    rightTalon.set(0.15);
 		} else {
-		    leftTalon.set(((inTalon * 0.9) + outTalon));
-		    rightTalon.set(((inTalon * 0.9) + outTalon));
+		    leftTalon.set(((inTalon ) + outTalon));
+		    rightTalon.set(((inTalon) + outTalon));
 		}
 		//robot drives w/ out input
 		myDrive.arcadeDrive(joystickLValue, joystickRValue);
