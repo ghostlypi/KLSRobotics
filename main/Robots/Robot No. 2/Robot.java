@@ -65,19 +65,6 @@ public class Robot extends TimedRobot {
 	private CvSink sink;
 	private Mat source;
 
-	//PID Vars
-	/*
-	* Experimental code. Waiting for complete module
-	* int P, I, D = 1;
-	* int integral, previous_error, setpoint = 0;
-	* double proportional = 0.3;
-	* double Integral = 0.2;
-	* double goal = 0;
-	* double error;
-	* double runningSpeed = 0;
-	* int integralTracker = 0;
-	* double armSpeed;
-	*/
 	//Joysticks
 	Joystick joystick0 = new Joystick(0);
 	Joystick joystick1 = new Joystick(1);
