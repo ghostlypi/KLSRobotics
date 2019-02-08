@@ -11,6 +11,6 @@ A utility class containing only static functions. This uses opencv to process an
  - Canny
  - GaussianBlur
  - OpenCV threshold
- - OpenCV findContours.
+ - OpenCV findContours
 ### Robot.java
 The main file. This file contains the code necessary to interact with the RoboRIO.
