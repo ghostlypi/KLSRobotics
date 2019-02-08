@@ -7,6 +7,10 @@
 ### MyVector.java
 - A minimalistic vector class that contains double values for x, y, and angle.
 ### ProcessImage.java
-- A utility class containing only static functions. This uses opencv to process an image to find contours and use those contours to determine where the robot should move.
+- A utility class containing only static functions. This uses opencv to process an image to find contours and use those contours to determine where the robot should move. The algorithms used include:
+ - Canny
+ - GaussianBlur
+ - OpenCV threshold
+ - OpenCV findContours.
 ### Robot.java
 - The main file. This file contains the code necessary to interact with the RoboRIO.
