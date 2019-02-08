@@ -8,7 +8,10 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Encoder;
+import org.opencv.core.Mat;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -35,6 +38,11 @@ public class Robot extends TimedRobot {
 	double joystickRValue;
 	double joystickArmValue;
 	double joystickWheelSpeedValue;
+
+	//Camera
+	private UsbCamera camera;
+	private CvSink sink;
+	private Mat source;
 
 	//PID Vars
 	/*
@@ -75,7 +83,10 @@ public class Robot extends TimedRobot {
 		armEncoder.setSamplesToAverage(10);
 		armEncoder.reset();
 		//Camera
-		CameraServer.getInstance().startAutomaticCapture();
+		camera = CameraServer.getInstance().startAutomaticCapture();
+		camera.setResolution(840,680);
+		sink = CameraServer.getInstance().getVideo();
+		source = new Mat();
 	}
  
 	/**
@@ -104,6 +115,13 @@ public class Robot extends TimedRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
+
+	public double roboRIOCameraAlignmentSystemGetAngleToTurn() {
+		sink.grabFrame(source);
+		MyVector choice = ProcessImage.processImage(source);
+		return choice.getAngle();
+	}
+
 	@Override
 	public void teleopPeriodic() {
 		//Drive Train
@@ -126,6 +144,10 @@ public class Robot extends TimedRobot {
 		}
 		leftTalon.set(ControlMode.PercentOutput,joystickWheelSpeedValue);
 		rightTalon.set(ControlMode.PercentOutput,joystickWheelSpeedValue);
+		
+		//Camera
+		double angle = roboRIOCameraAlignmentSystemGetAngleToTurn();
+		System.out.println(angle);
 	}
 
 	/**
