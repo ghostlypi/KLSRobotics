@@ -21,6 +21,24 @@ import org.opencv.core.Mat;
  * directory.
  */
 public class Robot extends TimedRobot {
+	// PID
+	int P, I, D = 1;
+	int integral, previous_error, setpoint = 0;
+	int count = 0;
+	double proportional = 0.3;
+	double Integral = 0.2;
+	double goal = 0;
+	double gripperMovement;
+	double eMeasure;
+	boolean joystickGripIn;
+	boolean joystickGripOut;
+	boolean buttonGripperIntake;
+	boolean buttonGripperRelease;
+	double error;
+	double runningSpeed = 0;
+	int integralTracker = 0;
+	double armSpeed;
+	
 	//time
 	long start;
 	//Motors
@@ -111,10 +129,37 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopPeriodic() {
-		//Drive Train
-		joystickLValue = -joystick0.getRawAxis(1) + joystick0.getRawAxis(2);
-		joystickRValue = -joystick0.getRawAxis(1) - joystick0.getRawAxis(2);
-		myDrive.tankDrive(joystickLValue, joystickRValue);
+		//Arm Movement
+		if(joystick0.getRawButton(1))
+		{
+			goal = 1.0;
+			integralTracker = 0;
+		}
+		else if(joystick0.getRawButton(2))
+		{
+			goal = 0.0;
+			integralTracker = 0;
+		}
+		else if(joystick0.getRawButton(3))
+		{
+			goal = 0.5;
+			integralTracker = 0;
+		}
+
+		armSpeed = joystick0.getRawAxis(1);
+		armSpark1.set(armSpeed);
+		armSpark2.set(armSpeed);
+		
+		//Encoder
+		count = armEncoder.get();
+		eMeasure = armEncoder.getDistance();
+		System.out.println(eMeasure);
+		error = (360 * goal) - eMeasure;
+		if(count % 5 == 0)
+		{
+			integralTracker += error;
+		}
+		runningSpeed = ((error * proportional)/360) + ((integralTracker * Integral)/360);
 
 		//Arm
 		joystickArmValue = joystick1.getRawAxis(1);
@@ -122,15 +167,17 @@ public class Robot extends TimedRobot {
 		rArmSpark.set(joystickArmValue);
 
 		//intake
-		if(joystick1.getRawButton(1)){
-			joystickWheelSpeedValue = 0.85;
-		}else if(joystick1.getRawButton(2)){
-			joystickWheelSpeedValue = -0.85;
-		}else{
-			joystickWheelSpeedValue = 0;
-		}
-		leftTalon.set(ControlMode.PercentOutput,joystickWheelSpeedValue);
-		rightTalon.set(ControlMode.PercentOutput,joystickWheelSpeedValue);
+		joystickLValue = joystick0.getRawAxis(1);
+		joystickRValue = joystick0.getRawAxis(1)*0.913;
+		
+		gripperMovement = joystick1.getRawAxis(2) - joystick1.getRawAxis(3);
+		leftTalon.set(ControlMode.PercentOutput, gripperMovement);
+		rightTalon.set(ControlMode.PercentOutput, -gripperMovement);
+		
+		//Drive Train
+		joystickLValue = -joystick0.getRawAxis(1) + joystick0.getRawAxis(2);
+		joystickRValue = -joystick0.getRawAxis(1) - joystick0.getRawAxis(2);
+		myDrive.tankDrive(joystickLValue, joystickRValue);
 		
 		//Camera
 		double angle = roboRIOCameraAlignmentSystemGetAngleToTurn();
