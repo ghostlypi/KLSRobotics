@@ -89,14 +89,9 @@ public class Robot extends TimedRobot {
          //Encoder
           System.out.println(armEncoder.getDistance()/128);
          //Arm
-		     joystickArmValue = 0; //-joystick1.getRawAxis(1);
-         now = System.currentTimeMillis();
-         if(now-start % 200 < 50 && now-start % 200 >= 0){
-           now = System.currentTimeMillis();
-           armUp(joystick1.getRawAxis(1));
-         }
-         //lArmSpark.set(joystickArmValue);
-         //rArmSpark.set(joystickArmValue);
+		  joystickArmValue = -joystick1.getRawAxis(1);
+          lArmSpark.set(joystickArmValue);
+          rArmSpark.set(joystickArmValue);
 
          //intake
          if(joystick1.getRawButton(1)){
