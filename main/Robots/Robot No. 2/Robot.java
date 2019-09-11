@@ -115,7 +115,7 @@ public class Robot extends TimedRobot {
 	  */
 	  if(joystickArmValue > -0.05 || joystickArmValue < 0.05){
 	       //Here is the number to edit
-	       joystickArmValue = 0.1
+	       joystickArmValue = 0.1;
 	  }
           lArmSpark.set(joystickArmValue);
           rArmSpark.set(joystickArmValue);
