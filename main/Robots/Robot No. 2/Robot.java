@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
          //Encoder
           System.out.println(armEncoder.getDistance()/128);
          //Arm
-`	  joystickArmValue = -joystick1.getRawAxis(1);
+	  joystickArmValue = -joystick1.getRawAxis(1);
 	  //This is the code to edit
 	  /*
 	  *
