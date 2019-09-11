@@ -90,31 +90,7 @@ public class Robot extends TimedRobot {
           System.out.println(armEncoder.getDistance()/128);
          //Arm
 	  joystickArmValue = -joystick1.getRawAxis(1);
-	  //This is the code to edit
-	  /*
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  *
-	  */
 	  if(joystickArmValue > -0.2 || joystickArmValue < 0.2){
-	       //Here is the number to edit
 	       joystickArmValue = -0.2;
 	  }
           lArmSpark.set(joystickArmValue);
