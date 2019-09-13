@@ -111,7 +111,7 @@ public class Robot extends TimedRobot {
 
        //Auto hold arm
         if( joystickArmValue > -0.2 && joystickArmValue < 0.2 ) {
-          joystickArmValue = -0.25;
+          joystickArmValue = -0.2;
         }
 
        //Emergency Shutoff
