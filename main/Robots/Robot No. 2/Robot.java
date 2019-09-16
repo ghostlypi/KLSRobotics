@@ -191,17 +191,22 @@ public class Robot extends TimedRobot {
 
      public double autoArmUp( double j, double k ) {
 
+        // tweak these for more control over the arm.
+        double x = 0.0; // this is the amount of "time" that the arm moves at minimum speed.
+        double y = 1.0; // this is the scale factor for the duration of acceleration
+        double z = -1.0; // this is the scale for the amount above the minimum speed that the arm travels.
+
         if( j + baseLineAngle > armEncoder.getDistance() / 128 && armEncoder.getRate() / 128 > k + baseLineAngle ) {
 
             return 0.0;
 
         } else if( j + baseLineAngle > armEncoder.getDistance() / 128 ) {
 
-            return -0.4;
+            return -0.3+(((armEncoder.getDistance() / 128)-(baseLineAngle + j - x)/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
 
         } else if( armEncoder.getDistance() / 128 > k + baseLineAngle ) {
 
-            return -0.1;
+            return -0.1+(((armEncoder.getDistance() / 128)-(baseLineAngle + k + x)/y))*z;
 
         } else {
 
