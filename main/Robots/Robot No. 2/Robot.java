@@ -76,6 +76,10 @@ public class Robot extends TimedRobot {
 
      double joystickWheelSpeedValue;
 
+     boolean lowerArm = false;
+
+     double limitTurnSpeed = 1;
+
 
 
      //Camera
@@ -194,7 +198,7 @@ public class Robot extends TimedRobot {
         // tweak these for more control over the arm.
         double x = 0.0; // this is the amount of "time" that the arm moves at minimum speed.
         double y = 1.0; // this is the scale factor for the duration of acceleration
-        double z = -1.0; // this is the scale for the amount above the minimum speed that the arm travels.
+        double z = 1.0; // this is the scale for the amount above the minimum speed that the arm travels.
 
         if( j + baseLineAngle > armEncoder.getDistance() / 128 && armEncoder.getRate() / 128 > k + baseLineAngle ) {
 
@@ -202,11 +206,11 @@ public class Robot extends TimedRobot {
 
         } else if( j + baseLineAngle > armEncoder.getDistance() / 128 ) {
 
-            return -0.3+(((armEncoder.getDistance() / 128)-(baseLineAngle + j - x)/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
+            return  -0.4; //-0.3+((((armEncoder.getDistance() / 128)-(baseLineAngle + j - x))/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
 
         } else if( armEncoder.getDistance() / 128 > k + baseLineAngle ) {
 
-            return -0.1+(((armEncoder.getDistance() / 128)-(baseLineAngle + k + x)/y))*z;
+            return -0.05;  //+((((armEncoder.getDistance() / 128)-(baseLineAngle + k + x))/y))*z;
 
         } else {
 
@@ -239,6 +243,18 @@ public class Robot extends TimedRobot {
         } else if( joystick1.getRawButton( 11 ) ) { // BOT ROCKET HATCH
 
           joystickArmValue = autoArmUp( 0.125, 0.23 );
+
+        } else if( joystick1.getRawButton( 8 ) ) { // TOP ROCKET CARGO
+
+          joystickArmValue = autoArmUp( 0.93, 0.941 );
+
+        } else if( joystick1.getRawButton( 10 ) ) { // MID ROCKET CARGO
+
+          joystickArmValue = autoArmUp( 0.63, 0.66 );
+
+        } else if( joystick1.getRawButton( 12 ) ) { // BOT ROCKET CARGO
+
+          joystickArmValue = autoArmUp( 0.345, 0.36 );
 
         } else {
 
@@ -295,9 +311,17 @@ public class Robot extends TimedRobot {
 
          //Drive Train
 
-         joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2));
+         limitTurnSpeed = 1;
 
-         joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2));
+         if( armEncoder.getDistance() / 128 > 0.1 ) { 
+
+            limitTurnSpeed = 0.6;
+
+         }
+         
+         joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2) * limitTurnSpeed );
+
+         joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2) * limitTurnSpeed );
 
 
 
