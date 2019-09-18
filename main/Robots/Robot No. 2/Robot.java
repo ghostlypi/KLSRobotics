@@ -80,6 +80,8 @@ public class Robot extends TimedRobot {
 
      double limitTurnSpeed = 1;
 
+     double distanceToTarget;
+
 
 
      //Camera
@@ -202,23 +204,45 @@ public class Robot extends TimedRobot {
 
         if( j + baseLineAngle > armEncoder.getDistance() / 128 && armEncoder.getRate() / 128 > k + baseLineAngle ) {
 
-            return 0.0;
+            return -0.2;
 
         } else if( j + baseLineAngle > armEncoder.getDistance() / 128 ) {
 
-            return  -0.4; //-0.3+((((armEncoder.getDistance() / 128)-(baseLineAngle + j - x))/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
+            return doIntegral( -0.5, -0.3, ( j + k ) / 2 ); //-0.4; //-0.3+((((armEncoder.getDistance() / 128)-(baseLineAngle + j - x))/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
 
         } else if( armEncoder.getDistance() / 128 > k + baseLineAngle ) {
 
-            return -0.05;  //+((((armEncoder.getDistance() / 128)-(baseLineAngle + k + x))/y))*z;
+            return doIntegral( -0.025, -0.15, ( j + k ) / 2 );  //+((((armEncoder.getDistance() / 128)-(baseLineAngle + k + x))/y))*z;
 
         } else {
 
-            return 0.0;
+            return -0.2;
 
         }
 
      }
+
+     public double doIntegral( double max, double min, double targetAngle ) {
+
+        distanceToTarget = abs( armEncoder.getDistance() / 128 - targetAngle );
+
+        if( distanceToTarget > 0.1 ) {
+
+            return max;
+
+        } else {
+
+            return 10 * ( max - min ) * distanceToTarget + min;
+
+        }
+
+     }
+
+     public static double abs(double a) {
+
+        return (a <= 0.0F) ? 0.0F - a : a;
+
+    }
 
 
 
@@ -276,8 +300,6 @@ public class Robot extends TimedRobot {
           joystickArmValue = -0.1;
 
         }
-
-
 
           lArmSpark.set( joystickArmValue );
 
