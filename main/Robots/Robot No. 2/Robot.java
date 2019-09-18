@@ -92,9 +92,9 @@ public class Robot extends TimedRobot {
 
      //Joysticks
 
-     Joystick joystick0 = new Joystick(0);
+     Joystick joystick0 = new Joystick( 0 );
 
-     Joystick joystick1 = new Joystick(1);
+     Joystick joystick1 = new Joystick( 1 );
 
 
 
@@ -104,66 +104,56 @@ public class Robot extends TimedRobot {
 
 	 new Thread(() -> {
                 UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-                camera.setResolution(640, 480);
+                camera.setResolution( 640, 480 );
                 
                 CvSink cvSink = CameraServer.getInstance().getVideo();
-                CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
+                CvSource outputStream = CameraServer.getInstance().putVideo( "Blur", 640, 480 );
                 
                 Mat source = new Mat();
                 Mat output = new Mat();
                 
-                while(!Thread.interrupted()) {
-                    cvSink.grabFrame(source);
-                    Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-                    outputStream.putFrame(output);
+                while( !Thread.interrupted() ) {
+                    cvSink.grabFrame( source );
+                    Imgproc.cvtColor( source, output, Imgproc.COLOR_BGR2GRAY );
+                    outputStream.putFrame( output );
                 }
             }).start();
 	     
          //Drive Train
 
-         myDrive = new RobotDrive(0, 1);
+         myDrive = new RobotDrive( 0, 1 );
 
 
 
          //Arm
 
-         lArmSpark = new Spark(2);
+         lArmSpark = new Spark( 2 );
 
-         rArmSpark = new Spark(3);
+         rArmSpark = new Spark( 3 );
 
 
 
          //Intake
 
-         leftTalon = new TalonSRX(0);
+         leftTalon = new TalonSRX( 0 );
 
-         rightTalon = new TalonSRX(1);
+         rightTalon = new TalonSRX( 1 );
 
 
 
          //encoder stuff
 
-         armEncoder  = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
+         armEncoder  = new Encoder( 0, 1, true, Encoder.EncodingType.k4X );
 
          baseLineAngle = armEncoder.getDistance();
 
-         armEncoder.setMaxPeriod(0.05);
+         armEncoder.setMaxPeriod( 0.05 );
 
-        //preset angles from starting angle 0.0
+         armEncoder.setMinRate( 10 );
 
-        //ROCKET HATCHES
+         armEncoder.setDistancePerPulse( 2.8125 * 15 / 42 );
 
-        //rh bot is 0.23 to 0.125
-
-        //rh mid is 0.6 to 0.51
-
-        //rh top is 0.89 to 0.8
-
-         armEncoder.setMinRate(10);
-
-         armEncoder.setDistancePerPulse(2.8125 * 15/42);
-
-         armEncoder.setSamplesToAverage(10);
+         armEncoder.setSamplesToAverage( 10 );
 
          armEncoder.reset();
 
@@ -181,7 +171,7 @@ public class Robot extends TimedRobot {
 
      }
 
-     /**
+     /*
       * This function is called periodically during autonomous
       */
 
@@ -193,14 +183,13 @@ public class Robot extends TimedRobot {
 
      }
 
-
+     /*
+      * Function "autoArmUp()" is a function that returns the speed the arm motors should
+      * run at based on the target range you want the arm to move to, that being the low
+      * and high ends of the range, as j and k respectively.  This function uses "doIntegral()".
+      */
 
      public double autoArmUp( double j, double k ) {
-
-        // tweak these for more control over the arm.
-        double x = 0.0; // this is the amount of "time" that the arm moves at minimum speed.
-        double y = 1.0; // this is the scale factor for the duration of acceleration
-        double z = 1.0; // this is the scale for the amount above the minimum speed that the arm travels.
 
         if( j + baseLineAngle > armEncoder.getDistance() / 128 && armEncoder.getRate() / 128 > k + baseLineAngle ) {
 
@@ -208,11 +197,11 @@ public class Robot extends TimedRobot {
 
         } else if( j + baseLineAngle > armEncoder.getDistance() / 128 ) {
 
-            return doIntegral( -0.5, -0.3, ( j + k ) / 2 ); //-0.4; //-0.3+((((armEncoder.getDistance() / 128)-(baseLineAngle + j - x))/y))*z; //Formerly -0.4; x = length of minimum speed; y = scale for distance of acceleration; z = 
+            return doIntegral( -0.5, -0.3, ( j + k ) / 2 );
 
         } else if( armEncoder.getDistance() / 128 > k + baseLineAngle ) {
 
-            return doIntegral( -0.025, -0.15, ( j + k ) / 2 );  //+((((armEncoder.getDistance() / 128)-(baseLineAngle + k + x))/y))*z;
+            return doIntegral( -0.025, -0.15, ( j + k ) / 2 );
 
         } else {
 
@@ -221,6 +210,12 @@ public class Robot extends TimedRobot {
         }
 
      }
+
+     /*
+      * Function "doIntegral()" is a function that returns the speed the arm motors should
+      * run at based on the highest speed you want the motor to run at, the lowest speed,
+      * and the target angle.  Slows the arm as it gets closer to the target.
+      */
 
      public double doIntegral( double max, double min, double targetAngle ) {
 
@@ -234,9 +229,17 @@ public class Robot extends TimedRobot {
 
             return 10 * ( max - min ) * distanceToTarget + min;
 
+            /* The formula is effectively this: y = 10( max - min )x + min
+             * Once the distance between the arm position and the target is 0.1 or less,
+             * it becomes the motor speed as a function of how close the target is.
+             */ 
+
         }
 
      }
+
+     // The absolute value function from "Math," however it failed to import
+     // when trying "Math.abs()," so reverted to using the function pulled from Math.
 
      public static double abs(double a) {
 
@@ -252,9 +255,17 @@ public class Robot extends TimedRobot {
 
 
 
-       //Encoder
-
-        System.out.println(armEncoder.getDistance()/128);
+       // Encoder
+        // ENCODER VALUE / 128 DEBUG PRINT STATEMENT
+        // System.out.println(armEncoder.getDistance()/128);
+        /* ARM PRESETS
+           Each set of numbers going into the function "autoArmUp()"
+           represent the low and high bounds for a range that the arm
+           needs to move to.
+           Still need the presets for the following:
+            - Cargo ship hatch
+            - Cargo ship cargo
+         */
 
         if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
 
@@ -282,7 +293,7 @@ public class Robot extends TimedRobot {
 
         } else {
 
-           joystickArmValue = -joystick1.getRawAxis(1);
+           joystickArmValue = -joystick1.getRawAxis( 1 );
            
            // Auto Hold Arm
            if( joystickArmValue > -0.2 && joystickArmValue < 0.2 ) {
@@ -295,7 +306,7 @@ public class Robot extends TimedRobot {
 
        //Emergency Shutoff
 
-        if(joystick1.getRawButton(3)){
+        if( joystick1.getRawButton( 3 ) ) {
 
           joystickArmValue = -0.1;
 
@@ -309,29 +320,32 @@ public class Robot extends TimedRobot {
 
          //intake
 
-         if(joystick1.getRawButton(1)){
+         if( joystick1.getRawButton( 1 ) ) {
 
              joystickWheelSpeedValue = 0.85;
 
-         }else if(joystick1.getRawButton(2)){
+         } else if( joystick1.getRawButton( 2 ) ) {
 
              joystickWheelSpeedValue = -0.85;
 
          }else{
 
-             joystickWheelSpeedValue = (-joystick1.getRawAxis(3)+1)/2 * -0.2;
+             joystickWheelSpeedValue = ( -joystick1.getRawAxis( 3 ) + 1 ) / 2 * -0.2;
 
          }
 
 
 
-        leftTalon.set(ControlMode.PercentOutput,-joystickWheelSpeedValue);
+        leftTalon.set( ControlMode.PercentOutput, -joystickWheelSpeedValue );
 
-        rightTalon.set(ControlMode.PercentOutput,joystickWheelSpeedValue);
+        rightTalon.set( ControlMode.PercentOutput, joystickWheelSpeedValue );
 
 
 
          //Drive Train
+
+         /* The purpose of the variable "limitTurnSpeed" is for if the arm is raised
+            above a particular ( and low ) height. */
 
          limitTurnSpeed = 1;
 
@@ -341,21 +355,21 @@ public class Robot extends TimedRobot {
 
          }
          
-         joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2) * limitTurnSpeed );
+         joystickLValue = ( -joystick0.getRawAxis( 1 ) + joystick0.getRawAxis( 2 ) * limitTurnSpeed );
 
-         joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2) * limitTurnSpeed );
+         joystickRValue = ( -joystick0.getRawAxis( 1 ) - joystick0.getRawAxis( 2 ) * limitTurnSpeed );
 
 
 
-		     boolean calebsTriggerMode = joystick0.getRawButton(1);
+		     boolean calebsTriggerMode = joystick0.getRawButton( 1 );
 
-		     if(calebsTriggerMode)
+		     if( calebsTriggerMode )
 
-			      myDrive.tankDrive(0.6 * joystickLValue, 0.6 * joystickRValue);
+			      myDrive.tankDrive( 0.6 * joystickLValue, 0.6 * joystickRValue );
 
 		     else
 
-		 	      myDrive.tankDrive(joystickLValue, joystickRValue);
+		 	      myDrive.tankDrive( joystickLValue, joystickRValue );
 
      }
 
