@@ -221,6 +221,7 @@ public class Robot extends TimedRobot {
 
         distanceToTarget = abs( armEncoder.getDistance() / 128 - targetAngle );
 
+
         if( distanceToTarget > 0.1 ) {
 
             return max;
