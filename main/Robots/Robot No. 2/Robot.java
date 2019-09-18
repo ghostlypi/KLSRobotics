@@ -226,16 +226,7 @@ public class Robot extends TimedRobot {
 
         distanceToTarget = abs( armEncoder.getDistance() / 128 - targetAngle );
 
-        if( distanceToTarget > 0.1 ) {
-
-            return max;
-
-        } else {
-
-            return 10 * ( max - min ) * distanceToTarget + min;
-
-        }
-
+            return (distanceToTarget > 0.1) ? max : (10 * ( max - min ) * distanceToTarget + min);
      }
 
      public static double abs(double a) {
