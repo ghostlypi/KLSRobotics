@@ -272,15 +272,15 @@ public class Robot extends TimedRobot {
 
         if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.8 + cv, 0.89 + cv );
+          joystickArmValue = autoArmUp( 0.8, 0.89 );
 
         } else if( joystick1.getRawButton( 9 ) ) { // MID ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.51 + cv, 0.6 + cv );
+          joystickArmValue = autoArmUp( 0.51, 0.6 );
 
         } else if( joystick1.getRawButton( 11 ) ) { // BOT ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.125 + cv, 0.23 + cv );
+          joystickArmValue = autoArmUp( 0.125, 0.23 );
 
         } else if( joystick1.getRawButton( 8 ) ) { // TOP ROCKET CARGO
 
@@ -296,7 +296,7 @@ public class Robot extends TimedRobot {
 
         } else if( joystick1.getRawButton( 5 ) ) {
 
-          joystickArmValue = autoArmUp( 0.061, 0.0685 );
+          joystickArmValue = autoArmUp( 0.06, 0.0625 );
 
         } else {
 
@@ -319,7 +319,7 @@ public class Robot extends TimedRobot {
 
         } else if( joystick1.getRawButton( 4 ) ) {
 
-          joystickArmValue = 0.35;
+          joystickArmValue = -0.35;
 
         }
 
