@@ -268,29 +268,35 @@ public class Robot extends TimedRobot {
             - Cargo ship cargo
          */
 
+        double cv = 0.05; // Calibration value
+
         if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.8, 0.89 );
+          joystickArmValue = autoArmUp( 0.8 + cv, 0.89 + cv );
 
         } else if( joystick1.getRawButton( 9 ) ) { // MID ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.51, 0.6 );
+          joystickArmValue = autoArmUp( 0.51 + cv, 0.6 + cv );
 
         } else if( joystick1.getRawButton( 11 ) ) { // BOT ROCKET HATCH
 
-          joystickArmValue = autoArmUp( 0.125, 0.23 );
+          joystickArmValue = autoArmUp( 0.125 + cv, 0.23 + cv );
 
         } else if( joystick1.getRawButton( 8 ) ) { // TOP ROCKET CARGO
 
-          joystickArmValue = autoArmUp( 0.93, 0.941 );
+          joystickArmValue = autoArmUp( 0.93 + cv, 0.941 + cv );
 
         } else if( joystick1.getRawButton( 10 ) ) { // MID ROCKET CARGO
 
-          joystickArmValue = autoArmUp( 0.63, 0.66 );
+          joystickArmValue = autoArmUp( 0.63 + cv, 0.66 + cv );
 
         } else if( joystick1.getRawButton( 12 ) ) { // BOT ROCKET CARGO
 
-          joystickArmValue = autoArmUp( 0.345, 0.36 );
+          joystickArmValue = autoArmUp( 0.345 + cv, 0.36 + cv );
+
+        } else if( joystick1.getRawButton( 5 ) ) {
+
+          joystickArmValue = autoArmUp( 0.061, 0.0685 );
 
         } else {
 
@@ -313,7 +319,7 @@ public class Robot extends TimedRobot {
 
         } else if( joystick1.getRawButton( 4 ) ) {
 
-          joystickArmValue = 0.3;
+          joystickArmValue = 0.35;
 
         }
 
