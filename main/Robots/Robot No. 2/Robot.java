@@ -360,17 +360,31 @@ public class Robot extends TimedRobot {
 
          joystickRValue = ( -joystick0.getRawAxis( 1 ) - joystick0.getRawAxis( 2 ) * limitTurnSpeed );
 
+         if( joystick0.getRawButton( 1 ) ) { // If calebsTriggerMode ...
 
+             myDrive.tankDrive( 0.6 * joystickLValue, 0.6 * joystickRValue );
 
-		     boolean calebsTriggerMode = joystick0.getRawButton( 1 );
+         } else if( joystick0.getRawButton( 7 ) ) { // Forwards at 0.3 speed
 
-		     if( calebsTriggerMode )
+            myDrive.tankDrive( 0.3 , 0.3 );
 
-			      myDrive.tankDrive( 0.6 * joystickLValue, 0.6 * joystickRValue );
+         } else if( joystick0.getRawButton( 11 ) ) { // Backwards at -0.3 speed
 
-		     else
+            myDrive.tankDrive( -0.3, -0.3 );
 
-		 	      myDrive.tankDrive( joystickLValue, joystickRValue );
+         } else if( joystick0.getRawButton( 9 ) ) { // Rotate left at 0.3 speed
+
+            myDrive.tankDrive( -0.3, 0.3 );
+
+         } else if( joystick0.getRawButton( 10 ) ) { // Rotate right at 0.3 speed
+
+            myDrive.tankDrive( 0.3, -0.3 );
+
+         } else {
+
+             myDrive.tankDrive( joystickLValue, joystickRValue );
+            
+         }
 
      }
 
