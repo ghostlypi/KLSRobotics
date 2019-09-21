@@ -311,6 +311,10 @@ public class Robot extends TimedRobot {
 
           joystickArmValue = -0.1;
 
+        } else if( joystick1.getRawButton( 4 ) ) {
+
+          joystickArmValue = 0.3;
+
         }
 
           lArmSpark.set( joystickArmValue );
@@ -329,7 +333,7 @@ public class Robot extends TimedRobot {
 
              joystickWheelSpeedValue = -0.85;
 
-         }else{
+         } else {
 
              joystickWheelSpeedValue = ( -joystick1.getRawAxis( 3 ) + 1 ) / 2 * -0.2;
 
@@ -366,19 +370,19 @@ public class Robot extends TimedRobot {
 
          } else if( joystick0.getRawButton( 7 ) ) { // Forwards at 0.3 speed
 
-            myDrive.tankDrive( 0.3 , 0.3 );
+            myDrive.tankDrive( 0.5 , 0.5 );
 
          } else if( joystick0.getRawButton( 11 ) ) { // Backwards at -0.3 speed
 
-            myDrive.tankDrive( -0.3, -0.3 );
+            myDrive.tankDrive( -0.5, -0.5 );
 
          } else if( joystick0.getRawButton( 9 ) ) { // Rotate left at 0.3 speed
 
-            myDrive.tankDrive( -0.3, 0.3 );
+            myDrive.tankDrive( -0.5, 0.5 );
 
          } else if( joystick0.getRawButton( 10 ) ) { // Rotate right at 0.3 speed
 
-            myDrive.tankDrive( 0.3, -0.3 );
+            myDrive.tankDrive( 0.5, -0.5 );
 
          } else {
 
