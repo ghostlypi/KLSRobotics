@@ -102,14 +102,14 @@ public class Robot extends TimedRobot {
 
      public void robotInit() {
 
-	 Thread t = new Thread(){
+	 new Thread(){
 		 
 		 UsbCamera camera = new UsbCamera(“cam0”,0);
 		 camera.setFPS(15);
 		 camera.setResolution(1280, 720);
 		 CameraServer.getInstance().startAutomaticCapture(camera);
 		 
-	 };
+	 }.start();
 	     
          //Drive Train
 
