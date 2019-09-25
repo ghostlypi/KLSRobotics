@@ -82,6 +82,16 @@ public class Robot extends TimedRobot {
 
      double distanceToTarget;
 
+     // Endoder Loop Lists
+
+     double cv = 0.05;
+
+     int[] armButtonList = new int[] { 7, 9, 11, 8, 10, 12, 5, 0 };
+
+     double[] botmRangeList = new double[] { 0.8, 0.51, 0.125, 0.93 + cv, 0.63 + cv, 0.345 + cv, 0.06 };
+    
+     double[] toppRangeList = new double[] { 0.89, 0.6, 0.23, 0.941 + cv, 0.66 + cv, 0.36 + cv, 0.0625 };
+
 
 
      //Camera
@@ -249,7 +259,7 @@ public class Robot extends TimedRobot {
 
        // Encoder
         // ENCODER VALUE / 128 DEBUG PRINT STATEMENT
-         System.out.println(armEncoder.getDistance()/128);
+        // System.out.println(armEncoder.getDistance()/128);
         /* ARM PRESETS
            Each set of numbers going into the function "autoArmUp()"
            represent the low and high bounds for a range that the arm
@@ -259,9 +269,9 @@ public class Robot extends TimedRobot {
             - Cargo ship cargo
          */
 
-        double cv = 0.05; // Calibration value
-
-        if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
+        //double cv = 0.05; // Calibration value
+        
+        /*if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
 
           joystickArmValue = autoArmUp( 0.8, 0.89 );
 
@@ -300,6 +310,34 @@ public class Robot extends TimedRobot {
 
            }
 
+        }*/
+
+        for( int i = 0; i > 6; i++ ) {
+        
+            if( i == 6 ) {
+    
+                double tempArmJoyVal = -joystick1.getRawAxis( 1 );
+    
+                if( tempArmJoyVal > -0.2 && tempArmJoyVal < 0.2 ) {
+    
+                    joystickArmValue = -0.2;
+
+                    break;
+    
+                }
+    
+                joystickArmValue = tempArmJoyVal;
+
+                break;
+            
+            } else if( joystick1.getRawButton( armButtonList[ i ] ) ) {
+    
+                joystickArmValue = autoArmUp( botmRangeList[ i ], toppRangeList[ i ] );
+
+                break;
+    
+            }
+    
         }
 
        //Emergency Shutoff
@@ -367,21 +405,21 @@ public class Robot extends TimedRobot {
 
          if( joystick0.getRawButton( 1 ) ) { // If calebsTriggerMode ...
 
-             myDrive.tankDrive( 0.6 * joystickLValue, 0.6 * joystickRValue );
+             myDrive.tankDrive( 0.675 * joystickLValue, 0.675 * joystickRValue );
 
-         } else if( joystick0.getRawButton( 7 ) ) { // Forwards at 0.3 speed
+         } else if( joystick0.getRawButton( 7 ) ) { // Forwards at 0.5 speed
 
             myDrive.tankDrive( 0.5 , 0.5 );
 
-         } else if( joystick0.getRawButton( 11 ) ) { // Backwards at -0.3 speed
+         } else if( joystick0.getRawButton( 11 ) ) { // Backwards at -0.5 speed
 
             myDrive.tankDrive( -0.5, -0.5 );
 
-         } else if( joystick0.getRawButton( 9 ) ) { // Rotate left at 0.3 speed
+         } else if( joystick0.getRawButton( 9 ) ) { // Rotate left at 0.5 speed
 
             myDrive.tankDrive( -0.5, 0.5 );
 
-         } else if( joystick0.getRawButton( 10 ) ) { // Rotate right at 0.3 speed
+         } else if( joystick0.getRawButton( 10 ) ) { // Rotate right at 0.5 speed
 
             myDrive.tankDrive( 0.5, -0.5 );
 
