@@ -105,8 +105,8 @@ public class Robot extends TimedRobot {
 	 new Thread(() -> {
 		 
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-        camera.setResolution(640, 480);
-        camera.setFPS(15);
+        camera.setResolution( 480, 360 );
+        camera.setFPS( 12 );
 		 
 	 }).start();
 	     
@@ -188,11 +188,11 @@ public class Robot extends TimedRobot {
 
         } else if( j + baseLineAngle > armEncoder.getDistance() / 128 ) {
 
-            return doIntegral( -0.5, -0.3, ( j + k ) / 2 );
+            return doIntegral( -0.45, -0.3, ( j + k ) / 2 );
 
         } else if( armEncoder.getDistance() / 128 > k + baseLineAngle ) {
 
-            return doIntegral( -0.025, -0.15, ( j + k ) / 2 );
+            return doIntegral( -0.05, -0.15, ( j + k ) / 2 );
 
         } else {
 
@@ -233,9 +233,9 @@ public class Robot extends TimedRobot {
      // The absolute value function from "Math," however it failed to import
      // when trying "Math.abs()," so reverted to using the function pulled from Math.
 
-     public static double abs(double a) {
+     public static double abs( double a ) {
 
-        return (a <= 0.0F) ? 0.0F - a : a;
+        return ( a <= 0.0F ) ? 0.0F - a : a;
 
     }
 
@@ -249,7 +249,7 @@ public class Robot extends TimedRobot {
 
        // Encoder
         // ENCODER VALUE / 128 DEBUG PRINT STATEMENT
-        // System.out.println(armEncoder.getDistance()/128);
+         System.out.println(armEncoder.getDistance()/128);
         /* ARM PRESETS
            Each set of numbers going into the function "autoArmUp()"
            represent the low and high bounds for a range that the arm
@@ -353,13 +353,17 @@ public class Robot extends TimedRobot {
 
          if( armEncoder.getDistance() / 128 > 0.1 ) { 
 
-            limitTurnSpeed = 0.6;
+            limitTurnSpeed = 0.625;
+
+         } else {
+
+            limitTurnSpeed = 0.825;
 
          }
          
-         joystickLValue = ( -joystick0.getRawAxis( 1 ) + joystick0.getRawAxis( 2 ) * limitTurnSpeed );
+         joystickLValue = ( -joystick0.getRawAxis( 1 ) + ( joystick0.getRawAxis( 2 ) * limitTurnSpeed ) );
 
-         joystickRValue = ( -joystick0.getRawAxis( 1 ) - joystick0.getRawAxis( 2 ) * limitTurnSpeed );
+         joystickRValue = ( -joystick0.getRawAxis( 1 ) - ( joystick0.getRawAxis( 2 ) * limitTurnSpeed ) );
 
          if( joystick0.getRawButton( 1 ) ) { // If calebsTriggerMode ...
 
