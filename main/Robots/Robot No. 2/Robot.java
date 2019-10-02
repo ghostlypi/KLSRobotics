@@ -82,11 +82,19 @@ public class Robot extends TimedRobot {
 
      double distanceToTarget;
 
+     boolean cargoIn = false;
+
+     boolean cargoInSet = false;
+
+     double acv = 0.0;
+
+
+
      // Endoder Loop Lists
 
      double cv = 0.05;
 
-     int[] armButtonList = new int[] { 7, 9, 11, 8, 10, 12, 5, 0 };
+     int[] armButtonList = new int[] { 7, 9, 11, 8, 10, 12, 5 };
 
      double[] botmRangeList = new double[] { 0.8, 0.51, 0.125, 0.93 + cv, 0.63 + cv, 0.345 + cv, 0.06 };
     
@@ -115,7 +123,7 @@ public class Robot extends TimedRobot {
 	 new Thread(() -> {
 		 
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-        camera.setResolution( 480, 360 );
+        camera.setResolution( 320, 240 );
         camera.setFPS( 12 );
 		 
 	 }).start();
@@ -269,9 +277,25 @@ public class Robot extends TimedRobot {
             - Cargo ship cargo
          */
 
-        //double cv = 0.05; // Calibration value
+        // double cv = 0.05; // Calibration value
+
+        if( !( cargoInSet ) ) {
+
+            double acv = armEncoder.getDistance() / 128 - 0.0;
+
+        }
+
+        if( cargoIn ) {
+
+            double cv = 0.05 + acv;
+
+        } else {
+
+            double cv = 0.00; // Calibration Value
+
+        }
         
-        /*if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
+        if( joystick1.getRawButton( 7 ) ) { // TOP ROCKET HATCH
 
           joystickArmValue = autoArmUp( 0.8, 0.89 );
 
@@ -310,35 +334,27 @@ public class Robot extends TimedRobot {
 
            }
 
-        }*/
+        }
 
-        for( int i = 0; i > 6; i++ ) {
-        
-            if( i == 6 ) {
+        /*for( int i = 0; i > 5; i++ ) {
     
-                double tempArmJoyVal = -joystick1.getRawAxis( 1 );
-    
-                if( tempArmJoyVal > -0.2 && tempArmJoyVal < 0.2 ) {
-    
-                    joystickArmValue = -0.2;
+            double tempArmJoyVal = -joystick1.getRawAxis( 1 );
 
-                    break;
-    
-                }
-    
-                joystickArmValue = tempArmJoyVal;
+            if( tempArmJoyVal > -0.2 && tempArmJoyVal < 0.2 ) {
 
-                break;
-            
+                joystickArmValue = -0.2;
+
             } else if( joystick1.getRawButton( armButtonList[ i ] ) ) {
     
                 joystickArmValue = autoArmUp( botmRangeList[ i ], toppRangeList[ i ] );
-
-                break;
     
+            } else {
+
+                joystickArmValue = tempArmJoyVal;
+
             }
     
-        }
+        }*/
 
        //Emergency Shutoff
 
@@ -362,9 +378,21 @@ public class Robot extends TimedRobot {
 
          if( joystick1.getRawButton( 1 ) ) {
 
+             cargoIn = false;
+
+             cargoInSet = false;
+
              joystickWheelSpeedValue = 0.85;
 
          } else if( joystick1.getRawButton( 2 ) ) {
+
+             if( !( cargoIn ) && !( cargoInSet ) ) {
+            
+                 cargoIn = true;
+
+                 cargoInSet = true;
+
+             }
 
              joystickWheelSpeedValue = -0.85;
 
