@@ -287,11 +287,11 @@ public class Robot extends TimedRobot {
 
         if( cargoIn ) {
 
-            double cv = 0.05 + acv;
+            double cv = 0.10 + acv;
 
         } else {
 
-            double cv = 0.00; // Calibration Value
+            double cv = 0.05; // Calibration Value
 
         }
         
@@ -322,6 +322,10 @@ public class Robot extends TimedRobot {
         } else if( joystick1.getRawButton( 5 ) ) {
 
           joystickArmValue = autoArmUp( 0.06, 0.0625 );
+
+        } else if( joystick1.getRawButton( 6 ) ) {
+
+          joystickArmValue = autoArmUp( 0.575, 0.625 );
 
         } else {
 
@@ -398,7 +402,7 @@ public class Robot extends TimedRobot {
 
          } else {
 
-             joystickWheelSpeedValue = ( -joystick1.getRawAxis( 3 ) + 1 ) / 2 * -0.2;
+             joystickWheelSpeedValue = ( -joystick1.getRawAxis( 3 ) + 1 ) / 2.0 * -0.4;
 
          }
 
