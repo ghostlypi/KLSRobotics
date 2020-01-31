@@ -63,7 +63,7 @@ public class Robot extends TimedRobot {
          encoder2 = new Encoder(2,3);
          encoder2.reset();
      }
-
+     
      @Override
      public void autonomousInit() {
          start = System.currentTimeMillis();
@@ -75,7 +75,18 @@ public class Robot extends TimedRobot {
      public void autonomousPeriodic() {
         myDrive.tankDrive(1, 1);
      }
-
+     /* What the lines mean below:
+     Each color has a percentage that we calculated via the color sensor & the smart dashboard.
+     After collecting that data, we made it so that the approximated value (the detected one)
+     was compared with the plus and minus of the range, which is defined as double range.
+     
+     An example:
+     If the detected red value from the sensor is less than or equal to 15.51%+the pre-defined range, and greater than
+     or equal to 15.51%-the range.
+     This goes through the red value, green value, and the blue value, if it is true, say that the color is Red on the smart dashboard.
+     
+     This happens for the detection of red, blue, yellow, and green, each with their individual numbers, but the range remains all the same.
+     */
      public String getColor(){
         String colorString;
         double range = 0.05;
@@ -106,7 +117,8 @@ public class Robot extends TimedRobot {
             colorCount++;
             lastColor = colorString;
          }
-
+         
+         // Adds in the detected red, green, and blue percentages. Along with the detected color in the method above
          SmartDashboard.putNumber("Red", detectedColor.red);
          SmartDashboard.putNumber("Green", detectedColor.green);
          SmartDashboard.putNumber("Blue", detectedColor.blue);
@@ -119,8 +131,11 @@ public class Robot extends TimedRobot {
          //Drive Train
          joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2));
          joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2));
-         //Automated Spinner
+         
+         //Resets the variable in case of a needed reset
          if(joystick0.getRawButton(11)) colorCount = 0;
+         
+         //If there are 32 color changed (~4 rotations), it makes the wheel for the control panel no longer spin. Otherwise, spin at 1/2 speed. 
          if(colorCount <= 32 && joystick0.getRawButton(7)){
             joystickLValue = 0.5;
             joystickRValue = 0.5;
@@ -131,7 +146,8 @@ public class Robot extends TimedRobot {
             joystickLValue = 0;
             joystickRValue = 0;
          }
-
+         
+         //The needed slower mode for more precise movement.
          boolean calebsTriggerMode = joystick0.getRawButton(1);
          if(calebsTriggerMode)
             myDrive.tankDrive(0.6 * joystickLValue, 0.6 * joystickRValue);
