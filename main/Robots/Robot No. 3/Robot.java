@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Encoder;
@@ -21,17 +23,23 @@ import com.revrobotics.ColorSensorV3;
 
 public class Robot extends TimedRobot {
 
-     //time
-     long start;
-     long now;
-
      //Drive
      DifferentialDrive myDrive;
      Spark lBank;
      Spark rBank;
+     boolean calebsTriggerMode;
 
-     //Camera
-     private UsbCamera camera;
+     //Winch
+     Spark winch;
+     double winchValue;
+     TalonSRX hook;
+
+     //Gun
+      Spark gun;
+      VictorSPX bottom;
+      VictorSPX top;
+      VictorSPX intake;
+      TalonSRX holding;
 
      //Encoders
      Encoder encoder1;
@@ -42,12 +50,13 @@ public class Robot extends TimedRobot {
      Joystick joystick1 = new Joystick(1);
      double joystickLValue;
      double joystickRValue;
-
-     //Color Sensor
-     int colorCount;
-     String lastColor;
-     I2C.Port i2cPort = I2C.Port.kOnboard;
-     ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
+     //Contorl Panel
+      TalonSRX panelMotor;
+      //Color Sensor
+        int colorCount;
+        String lastColor;
+        I2C.Port i2cPort = I2C.Port.kOnboard;
+        ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
      
     @Override
      public void robotInit() {
@@ -55,6 +64,14 @@ public class Robot extends TimedRobot {
          rBank = new Spark(0);
          lBank = new Spark(1);
          myDrive = new DifferentialDrive(rBank, lBank);
+         //Winch + hook
+         winch = new Spark(2);
+         //MAKE SURE TO CHANGE WITH CORRECT DEVICE NUMBER BELOW
+         hook = new TalonSRX(0);
+         //Gun
+         intake = new VictorSPX(3);
+         top = new VictorSPX(4);
+         bottom = new VictorSPX(5);
          //Color Sensor
          lastColor = "";
          //Encoder
@@ -63,10 +80,9 @@ public class Robot extends TimedRobot {
          encoder2 = new Encoder(2,3);
          encoder2.reset();
      }
-     
+
      @Override
      public void autonomousInit() {
-         start = System.currentTimeMillis();
      }
      /**
       * This function is called periodically during autonomous
@@ -75,18 +91,7 @@ public class Robot extends TimedRobot {
      public void autonomousPeriodic() {
         myDrive.tankDrive(1, 1);
      }
-     /* What the lines mean below:
-     Each color has a percentage that we calculated via the color sensor & the smart dashboard.
-     After collecting that data, we made it so that the approximated value (the detected one)
-     was compared with the plus and minus of the range, which is defined as double range.
-     
-     An example:
-     If the detected red value from the sensor is less than or equal to 15.51%+the pre-defined range, and greater than
-     or equal to 15.51%-the range.
-     This goes through the red value, green value, and the blue value, if it is true, say that the color is Red on the smart dashboard.
-     
-     This happens for the detection of red, blue, yellow, and green, each with their individual numbers, but the range remains all the same.
-     */
+
      public String getColor(){
         String colorString;
         double range = 0.05;
@@ -117,8 +122,7 @@ public class Robot extends TimedRobot {
             colorCount++;
             lastColor = colorString;
          }
-         
-         // Adds in the detected red, green, and blue percentages. Along with the detected color in the method above
+
          SmartDashboard.putNumber("Red", detectedColor.red);
          SmartDashboard.putNumber("Green", detectedColor.green);
          SmartDashboard.putNumber("Blue", detectedColor.blue);
@@ -132,10 +136,28 @@ public class Robot extends TimedRobot {
          joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2));
          joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2));
          
-         //Resets the variable in case of a needed reset
-         if(joystick0.getRawButton(11)) colorCount = 0;
+         //Winch Up/down
+         winchValue = (-joystick1.getRawAxis(1));
+         winch.set(winchValue);
+
+         //Hook up and down
+         if (joystick1.getRawButton(1)){
+          hook.set(ControlMode.PercentOutput, 0.8);
+         } else if (joystick1.getRawButton(2)){
+          hook.set(ControlMode.PercentOutput, -0.8);
+         }
+
+         //Fire
+         gun.set(joystick0.getRawAxis(3));
+         if(joystick0.getRawButton(1)) holding.set(ControlMode.PercentOutput,1);
          
-         //If there are 32 color changed (~4 rotations), it makes the wheel for the control panel no longer spin. Otherwise, spin at 1/2 speed. 
+         //Intake
+         intake.set(ControlMode.PercentOutput, 1);
+         top.set(ControlMode.PercentOutput, 1);
+         bottom.set(ControlMode.PercentOutput, 1);
+
+         //Automated Spinner
+         if(joystick0.getRawButton(11)) colorCount = 0;
          if(colorCount <= 32 && joystick0.getRawButton(7)){
             joystickLValue = 0.5;
             joystickRValue = 0.5;
@@ -146,9 +168,12 @@ public class Robot extends TimedRobot {
             joystickLValue = 0;
             joystickRValue = 0;
          }
+         if (joystick1.getRawButton(3) || joystick.getRawButton(5)){
+           
+         }
          
-         //The needed slower mode for more precise movement.
-         boolean calebsTriggerMode = joystick0.getRawButton(1);
+         if(joystick0.getRawButton(11)) calebsTriggerMode = true;
+         if(joystick1.getRawButton(12)) calebsTriggerMode = false;
          if(calebsTriggerMode)
             myDrive.tankDrive(0.6 * joystickLValue, 0.6 * joystickRValue);
          else
