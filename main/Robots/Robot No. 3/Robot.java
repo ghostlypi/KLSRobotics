@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Encoder;
@@ -21,17 +23,23 @@ import com.revrobotics.ColorSensorV3;
 
 public class Robot extends TimedRobot {
 
-     //time
-     long start;
-     long now;
-
      //Drive
      DifferentialDrive myDrive;
      Spark lBank;
      Spark rBank;
+     boolean calebsTriggerMode;
 
-     //Camera
-     private UsbCamera camera;
+     //Winch
+     Spark winch;
+     double winchValue;
+     TalonSRX hook;
+
+     //Gun
+      Spark gun;
+      VictorSPX bottom;
+      VictorSPX top;
+      VictorSPX intake;
+      TalonSRX holding;
 
      //Encoders
      Encoder encoder1;
@@ -42,12 +50,13 @@ public class Robot extends TimedRobot {
      Joystick joystick1 = new Joystick(1);
      double joystickLValue;
      double joystickRValue;
-
-     //Color Sensor
-     int colorCount;
-     String lastColor;
-     I2C.Port i2cPort = I2C.Port.kOnboard;
-     ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
+     //Contorl Panel
+      TalonSRX panelMotor;
+      //Color Sensor
+        int colorCount;
+        String lastColor;
+        I2C.Port i2cPort = I2C.Port.kOnboard;
+        ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
      
     @Override
      public void robotInit() {
@@ -55,18 +64,26 @@ public class Robot extends TimedRobot {
          rBank = new Spark(0);
          lBank = new Spark(1);
          myDrive = new DifferentialDrive(rBank, lBank);
+         //Winch + hook
+         winch = new Spark(2);
+         //MAKE SURE TO CHANGE WITH CORRECT DEVICE NUMBER BELOW
+         hook = new TalonSRX(0);
+         //Gun
+         intake = new VictorSPX(3);
+         top = new VictorSPX(4);
+         bottom = new VictorSPX(5);
          //Color Sensor
          lastColor = "";
+         panelMotor = new TalonSRX(1);
          //Encoder
          encoder1 = new Encoder(0,1);
          encoder1.reset();
          encoder2 = new Encoder(2,3);
          encoder2.reset();
      }
-     
+
      @Override
      public void autonomousInit() {
-         start = System.currentTimeMillis();
      }
      /**
       * This function is called periodically during autonomous
@@ -118,7 +135,7 @@ public class Robot extends TimedRobot {
             lastColor = colorString;
          }
          
-         // Adds in the detected red, green, and blue percentages. Along with the detected color in the method above
+         //Essentially put the specified values on the smart dashboard
          SmartDashboard.putNumber("Red", detectedColor.red);
          SmartDashboard.putNumber("Green", detectedColor.green);
          SmartDashboard.putNumber("Blue", detectedColor.blue);
@@ -132,23 +149,75 @@ public class Robot extends TimedRobot {
          joystickLValue = (-joystick0.getRawAxis(1) + joystick0.getRawAxis(2));
          joystickRValue = (-joystick0.getRawAxis(1) - joystick0.getRawAxis(2));
          
-         //Resets the variable in case of a needed reset
-         if(joystick0.getRawButton(11)) colorCount = 0;
+         //Winch Up/down
+         winchValue = (-joystick1.getRawAxis(1));
+         winch.set(winchValue);
+
+         //Hook up and down
+         if (joystick1.getRawButton(1)){
+          hook.set(ControlMode.PercentOutput, 0.8);
+         } else if (joystick1.getRawButton(2)){
+          hook.set(ControlMode.PercentOutput, -0.8);
+         }
+
+         //Fire
+         gun.set(joystick0.getRawAxis(3));
+         if(joystick0.getRawButton(1)) holding.set(ControlMode.PercentOutput,1);
          
-         //If there are 32 color changed (~4 rotations), it makes the wheel for the control panel no longer spin. Otherwise, spin at 1/2 speed. 
-         if(colorCount <= 32 && joystick0.getRawButton(7)){
-            joystickLValue = 0.5;
-            joystickRValue = 0.5;
-         }else if(joystick0.getRawButton(8) && !colorString.equals(ds.getGameSpecificMessage())){
-            joystickLValue = 0.5;
-            joystickRValue = 0.5;
+         //Intake
+         intake.set(ControlMode.PercentOutput, 1);
+         top.set(ControlMode.PercentOutput, 1);
+         bottom.set(ControlMode.PercentOutput, 1);
+
+         //Automated Spinner
+         //If there are 32 color changed (~4 rotations),
+         //it makes the wheel for the control panel no longer spin.
+         //Otherwise, spin at 1/2 speed. 
+         if(joystick1.getRawButton(11)) colorCount = 0;
+         if(colorCount <= 32 && joystick1.getRawButton(7)){
+            panelMotor.set(ControlMode.PercentOutput, 0.5);
+         }else if(joystick1.getRawButton(8) && !colorString.equals(ds.getGameSpecificMessage())){
+            panelMotor.set(ControlMode.PercentOutput, 0.5);
          }else{
-            joystickLValue = 0;
-            joystickRValue = 0;
+            panelMotor.set(ControlMode.PercentOutput, 0);
+         }
+
+         //Possible align to ball
+         //Todo, Abhi has to program getBallValue
+         double degreesForBall = getBallValue();
+         double rangeForBall = 10;
+         if (joystick1.getRawButton(3) || joystick1.getRawButton(5)){
+           if (degreesForBall >= rangeForBall){
+              joystickLValue = -0.2;
+              joystickRValue = 0.2;
+           } else if (degreesForBall <= -rangeForBall){
+              joystickLValue = 0.2;
+              joystickRValue = -0.2;
+           }
+         }
+
+         //Possible allign to target
+         //Todo, Abhi has to program getTargetValue
+         double degreesForTarget = getTargetValue();
+         double rangeForTarget = 2;
+         if (joystick1.getRawButton(4) || joystick1.getRawButton(6)){
+            if (degreesForTarget >= rangeForTarget) {
+               joystickLValue = -0.2;
+               joystickRValue = 0.2;
+            } else if (degreesForTarget <= -rangeForTarget) {
+               joystickLValue = 0.2;
+               joystickRValue = -0.2;
+            }
          }
          
-         //The needed slower mode for more precise movement.
-         boolean calebsTriggerMode = joystick0.getRawButton(1);
+         //Reset Encoders
+         if (joystick0.getRawButton(9)){
+            encoder1.reset();
+            encoder2.reset();
+         }
+
+         if(joystick0.getRawButton(11)) calebsTriggerMode = true;
+         if(joystick0.getRawButton(12)) calebsTriggerMode = false;
          if(calebsTriggerMode)
             myDrive.tankDrive(0.6 * joystickLValue, 0.6 * joystickRValue);
          else
