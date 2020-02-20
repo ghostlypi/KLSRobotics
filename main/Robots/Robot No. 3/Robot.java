@@ -197,8 +197,8 @@ public class Robot extends TimedRobot {
          }
 
          //Possible allign to target
-         //Todo, Abhi has to program getTargetValue
-         double degreesForTarget = getTargetValue();
+         //NOTE: if proven to work well, replace getAngleFrontPortValue() with getAngleBackPortValue().
+         double degreesForTarget = getAngleFrontPortValue();
          double rangeForTarget = 2;
          if (joystick1.getRawButton(4) || joystick1.getRawButton(6)){
             if (degreesForTarget >= rangeForTarget) {
