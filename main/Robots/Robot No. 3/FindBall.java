@@ -30,6 +30,10 @@ class Pair<K, V> {
 public class FindBall {
 
 	public static final double R = 3.5; // inches
+	
+	public static final double X_OFFSET = 0d; // TODO: set this (in inches).
+	public static final double Y_OFFSET = 0d; // TODO: set this (in inches).
+	public static final double Z_OFFSET = 0d; // TODO: set this (in inches).
 
 	// https://stackoverflow.com/questions/30258163/display-image-in-mat-with-jframe-opencv-3-00
 	public static BufferedImage bufferedImage(Mat m) {
@@ -122,10 +126,13 @@ public class FindBall {
 
 	public static double getBallValue(Mat mat, int width, int height, Mat cameraMatrix, Mat distCoeffs) {
 		Point3 ball = getBallValue(mat, width, height, cameraMatrix, distCoeffs);
+		ball.x -= FindBall.X_OFFSET;
+		ball.y -= FindBall.Y_OFFSET;
+		ball.z -= FindBall.Z_OFFSET;
 		if(ball != null && ball.z != 0) {
 			return Math.atan2(ball.x / ball.z);
 		}
-		return -1000;
+		return 0d;
 	}
 
 	/*public static void main(String[] args) {
