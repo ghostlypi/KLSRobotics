@@ -80,6 +80,8 @@ public class Robot extends TimedRobot {
          encoder1.reset();
          encoder2 = new Encoder(2,3);
          encoder2.reset();
+          //Camera setup
+          UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
      }
 
      @Override
